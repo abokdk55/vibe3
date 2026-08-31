@@ -1,65 +1,399 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ko">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>vibe3</title>
-    <style>
-      :root {
-        color-scheme: light dark;
-        font-family:
-          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
-          "Segoe UI", sans-serif;
-        background: #f7f4ef;
-        color: #171717;
-      }
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>안병옥 | 38년 실무 경험 × AI 교육 전문가</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
 
-      * {
-        box-sizing: border-box;
-      }
+<nav class="navbar">
+  <div class="logo">안병옥 <span>강사</span></div>
+  <div class="nav-links">
+    <a href="#curriculum">커리큘럼</a>
+    <a href="#career">경력</a>
+    <a href="#awards">수상·활동</a>
+  </div>
+  <a href="#contact" class="nav-btn">강의 문의하기</a>
+</nav>
 
-      body {
-        margin: 0;
-        min-height: 100vh;
-        display: grid;
-        place-items: center;
-      }
+<header class="hero">
+  <div class="hero-text">
+    <p class="eyebrow" id="hero-eyebrow">관세청 38년 경력 관세사 · AI 콘텐츠 · 교육 전문가</p>
+    <h1 id="hero-title">38년의 실무가 만든 신뢰,<br>AI 시대의 언어로 전합니다</h1>
+    <p class="subtitle" id="hero-subtitle">복잡한 AI와 디지털 기술도, 시니어와 초보자의 눈높이에 맞추면<br>
+    누구나 자신감을 갖고 따라올 수 있습니다.</p>
+    <div class="hero-buttons">
+      <a href="#contact" class="cta-button" id="hero-cta">무료 강의 상담 신청하기</a>
+      <a href="#curriculum" class="ghost-button">커리큘럼 보기</a>
+    </div>
+    <div class="stat-row">
+      <div class="stat"><strong>38년</strong><span>공직·실무 경력</span></div>
+      <div class="stat"><strong>4개</strong><span>전문 자격증</span></div>
+      <div class="stat"><strong>3회</strong><span>영화제 수상</span></div>
+    </div>
+  </div>
+  <div class="hero-photo">
+    <img src="profile-cutout.png" alt="안병옥 강사 전신 프로필 사진">
+  </div>
+</header>
 
-      main {
-        width: min(720px, calc(100vw - 48px));
-      }
+<section class="audience">
+  <h2>이런 분들께 추천합니다</h2>
+  <div class="audience-grid">
+    <div class="audience-card">
+      <div class="feature-icon">🏫</div>
+      <p>ChatGPT·AI 교육을 도입하고 싶은 학교·기관</p>
+    </div>
+    <div class="audience-card">
+      <div class="feature-icon">👥</div>
+      <p>디지털 기기가 막막한 중장년층·시니어 학습자</p>
+    </div>
+    <div class="audience-card">
+      <div class="feature-icon">🌱</div>
+      <p>프롬프트 작성부터 배우고 싶은 AI 입문자</p>
+    </div>
+    <div class="audience-card">
+      <div class="feature-icon">🎬</div>
+      <p>숏폼 영상 제작으로 콘텐츠를 시작하려는 분</p>
+    </div>
+  </div>
+</section>
 
-      h1 {
-        margin: 0 0 12px;
-        font-size: clamp(48px, 12vw, 112px);
-        line-height: 0.9;
-        letter-spacing: 0;
-      }
+<section id="curriculum" class="curriculum">
+  <span class="section-kicker">CURRICULUM</span>
+  <h2>커리큘럼</h2>
+  <p class="section-subtitle" id="curriculum-subtitle">전통 산업 지식과 최신 AI 기술을 접목한 6가지 실전 교육 분야</p>
+  <div class="curriculum-grid" id="curriculum-grid">
+    <!-- 관리자 페이지의 콘텐츠 설정을 기반으로 자바스크립트가 채워 넣습니다 -->
+  </div>
+</section>
 
-      p {
-        margin: 0;
-        max-width: 520px;
-        font-size: clamp(18px, 3vw, 24px);
-        line-height: 1.45;
-        color: #4a4a4a;
-      }
+<section class="philosophy">
+  <blockquote>
+    "지식은 현장에서 활용될 때 비로소 가치를 지닙니다.<br>
+    모든 강의는 이론에 머물지 않고, 학습자가 바로 적용할 수 있는<br>
+    단계별 실습 중심으로 구성합니다."
+  </blockquote>
+  <p class="quote-author">— 안병옥의 교육 철학</p>
+</section>
 
-      @media (prefers-color-scheme: dark) {
-        :root {
-          background: #111111;
-          color: #fafafa;
-        }
+<section id="career" class="career">
+  <span class="section-kicker">CAREER</span>
+  <h2>주요 경력</h2>
+  <p class="section-subtitle">38년의 공직 경력에서 시작해 AI·콘텐츠 교육 전문가로 이어지는 여정</p>
+  <div class="timeline-v2">
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-card">
+        <span class="tl-year">2025.10 ~ 현재</span>
+        <h3>큐스텀 대표</h3>
+        <p>AI 기반 비즈니스 운영</p>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-card">
+        <span class="tl-year">현재</span>
+        <h3>두온교육 · AI 트리거스 강사</h3>
+        <p>영상제작 강사 활동</p>
+        <ul>
+          <li>시니어·초보 학습자 대상 숏폼 영상 제작 강의 진행</li>
+          <li>Gpters AI 연구 커뮤니티에서 최신 AI 트렌드 연구 및 실습 참여</li>
+        </ul>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-card">
+        <span class="tl-year">2023.1 ~ 2024.12</span>
+        <h3>㈜아이티밴드 대표</h3>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-card">
+        <span class="tl-year">2020.6 ~ 2022.12</span>
+        <h3>㈜에이리스 대표</h3>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-card">
+        <span class="tl-year">2020.1 ~ 2020.5</span>
+        <h3>세한관세법인 대표 관세사</h3>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-card">
+        <span class="tl-year">1983 ~ 2019 (36년)</span>
+        <h3>관세청 근무 · 고위공무원 퇴직</h3>
+        <ul>
+          <li>관세청 정보기획과장 · 정보관리과장</li>
+          <li>관세청 FTA집행기획과장 · 수출입물류과장</li>
+          <li>서울세관 심사국장 · FTA집행국장</li>
+          <li>울산세관장 · 여수세관장</li>
+        </ul>
+      </div>
+    </div>
+  </div>
 
-        p {
-          color: #c9c9c9;
-        }
+  <div class="edu-columns">
+    <div>
+      <h3>학력</h3>
+      <ul class="record-list">
+        <li>한남대 경영대학원 무역학과 석박사통합과정 수료 (2018)</li>
+        <li>방송통신대학교 행정학과 졸업 (1998)</li>
+        <li>국립세무대학 관세학과 졸업 (1983)</li>
+      </ul>
+    </div>
+    <div>
+      <h3>특별 과정</h3>
+      <ul class="record-list">
+        <li>제30기 칭화대 CEO 정책과정 수료 (2018)</li>
+        <li>제29기 GLMP 물류정책과정 수료 (2019)</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="awards" class="awards">
+  <h2>수상 및 자격</h2>
+  <p class="section-subtitle">공직 실무 전문성과 AI 교육 역량을 함께 증명하는 기록</p>
+  <div class="award-columns">
+    <div>
+      <h3>🏆 수상 내역</h3>
+      <ul class="record-list">
+        <li>제1회 대한민국 인공지능영화제 특별상</li>
+        <li>제4회 서울국제 AI 영화제 수상</li>
+        <li>2025 GAMFF 영화제 특별상</li>
+      </ul>
+    </div>
+    <div>
+      <h3>📜 보유 자격증</h3>
+      <ul class="record-list">
+        <li>관세사 (제4278호, 관세청장)</li>
+        <li>보세사 · 행정사 · 사회복지사</li>
+        <li>AI콘텐츠전문가 · 프롬프트 엔지니어</li>
+        <li>구글 공인 교육전문가 레벨 1·2 · 구글 TSA 인증</li>
+      </ul>
+    </div>
+    <div>
+      <h3>🎓 교육·연구 활동</h3>
+      <ul class="record-list">
+        <li>평택 용이중학교 — 교원 대상 에듀테크 활용 연수</li>
+        <li>함양고등학교 — ChatGPT 활용·프롬프트 작성·진로 글쓰기 강의</li>
+        <li>Gpters AI 연구 커뮤니티 — 최신 AI 트렌드 연구 및 실습</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="contact" class="contact-cta">
+  <h2>지금, 강의를 요청해보세요</h2>
+  <p>학교·기관·기업 대상 AI 실무 활용, 프롬프트 엔지니어링, 숏폼 영상 제작 강의를 진행합니다.<br>
+  망설이지 마세요 — 든든한 안내자가 함께합니다.</p>
+
+  <form id="inquiry-form" class="inquiry-form">
+    <input type="text" name="name" placeholder="이름" required>
+    <input type="text" name="contact" placeholder="연락처 (전화번호 또는 이메일)" required>
+    <textarea name="message" placeholder="문의 내용을 남겨주세요" rows="3"></textarea>
+    <input type="text" name="website" class="hp-field" tabindex="-1" autocomplete="off">
+    <button type="submit" class="cta-button">상담 신청하기</button>
+    <p id="inquiry-status" class="inquiry-status"></p>
+  </form>
+
+  <a href="mailto:abokdk55@gmail.com" class="ghost-button contact-email-link" id="contact-email-link">이메일로 문의하기</a>
+  <p class="contact-info" id="contact-info">HP. 010-6500-3751 &nbsp;|&nbsp; abokdk55@gmail.com</p>
+</section>
+
+<footer>
+  <p>&copy; 2026 안병옥. All rights reserved.</p>
+</footer>
+
+<script>
+function toggleCard(button) {
+  const card = button.closest('.curriculum-card');
+  card.classList.toggle('open');
+}
+
+const DEFAULT_CURRICULUM = [
+  { tag: 'AI 실무', title: 'AI 실무 활용', level: '입문', hours: '2시간',
+    summary: '업무 생산성을 끌어올리는 생성형 AI 도구 활용법을 처음부터 실습으로 익힙니다.',
+    details: ['ChatGPT·Gemini 등 생성형 AI 도구 기본 활용', '반복 업무 자동화 프롬프트 작성', '실무 문서·보고서 초안 자동 생성'],
+    detailUrl: 'curriculum/ai-실무-활용.html' },
+  { tag: '콘텐츠', title: 'GPTs 콘텐츠 기획', level: '중급', hours: '3시간',
+    summary: '나만의 GPTs를 기획하고 만드는 과정을 단계별로 따라 하며 완성합니다.',
+    details: ['목적에 맞는 GPTs 기획 및 페르소나 설정', '지식 파일 연동 및 커스텀 지침 작성', '배포 방법과 실제 활용 사례'],
+    detailUrl: 'curriculum/gpts-콘텐츠-기획.html' },
+  { tag: '엔지니어링', title: '프롬프트 엔지니어링', level: '중급', hours: '3시간',
+    summary: '구글 공인 교육전문가 인증 기반, 원하는 결과를 얻는 프롬프트 작성법을 배웁니다.',
+    details: ['프롬프트 구조화 원칙과 핵심 요소', '목적별(요약·기획·번역 등) 템플릿 실습', '결과물 품질을 높이는 반복 개선법'],
+    detailUrl: 'curriculum/프롬프트-엔지니어링.html' },
+  { tag: '영상 제작', title: '숏폼 영상 제작', level: '입문', hours: '4시간',
+    summary: '기획부터 편집까지, AI 도구로 누구나 숏폼 콘텐츠를 제작할 수 있도록 안내합니다.',
+    details: ['숏폼 기획 및 스토리보드 작성', 'AI 영상·이미지 생성 도구 활용', '편집, 자막, 채널별 배포 전략'],
+    detailUrl: 'curriculum/숏폼-영상-제작.html' },
+  { tag: '실무', title: '관세·무역 실무', level: '실무', hours: '4시간',
+    summary: '38년 관세청 실무 경험을 바탕으로 한 통관·무역 실무 노하우를 전수합니다.',
+    details: ['수출입 통관 절차와 필수 서류', 'FTA 협정 활용 전략', '현장에서 자주 겪는 실무 트러블슈팅'],
+    detailUrl: 'curriculum/관세-무역-실무.html' },
+  { tag: '바이브코딩', title: '바이브코딩 활용', level: '입문', hours: '2시간',
+    summary: '코딩을 몰라도 AI와 대화하듯 요청만으로 나만의 웹페이지·서비스를 직접 만들어보는 실습을 진행합니다.',
+    details: ['자연어로 웹페이지 구조·디자인 요청하기', 'AI와 대화하며 내용·디자인 다듬기', '실제 인터넷 주소로 배포까지 완성'],
+    detailUrl: 'curriculum/바이브코딩-활용.html' },
+];
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str == null ? '' : String(str);
+  return div.innerHTML;
+}
+
+const TAG_ICONS = {
+  'AI 실무': '🤖',
+  '콘텐츠': '✨',
+  '엔지니어링': '⚙️',
+  '영상 제작': '🎬',
+  '실무': '⚖️',
+  '바이브코딩': '💬',
+};
+
+function iconForTag(tag) {
+  return TAG_ICONS[tag] || '📘';
+}
+
+let revealObserver = null;
+function observeReveal(el) {
+  if (!revealObserver) {
+    revealObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in-view');
+            revealObserver.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.12 }
+    );
+  }
+  revealObserver.observe(el);
+}
+
+function renderCurriculum(list) {
+  const grid = document.getElementById('curriculum-grid');
+  if (!grid || !Array.isArray(list)) return;
+
+  const subtitle = document.getElementById('curriculum-subtitle');
+  if (subtitle) {
+    subtitle.textContent = `전통 산업 지식과 최신 AI 기술을 접목한 ${list.length}가지 실전 교육 분야`;
+  }
+
+  grid.innerHTML = list
+    .map((item, idx) => {
+      const details = Array.isArray(item.details) ? item.details : [];
+      const detailLink = item.detailUrl
+        ? `<a href="${escapeHtml(item.detailUrl)}" class="detail-link">더 알아보기 <span>→</span></a>`
+        : '';
+      const index = String(idx + 1).padStart(2, '0');
+      return `
+    <div class="curriculum-card" style="transition-delay:${idx * 60}ms">
+      <div class="card-top">
+        <span class="card-index">${index}</span>
+        <span class="card-icon">${iconForTag(item.tag)}</span>
+      </div>
+      <button class="card-header" onclick="toggleCard(this)">
+        <div>
+          <span class="tag">${escapeHtml(item.tag)}</span>
+          <span class="level-badge">${escapeHtml(item.level)} · ${escapeHtml(item.hours)}</span>
+          <h3>${escapeHtml(item.title)}</h3>
+        </div>
+        <span class="toggle-icon">+</span>
+      </button>
+      <p class="card-summary">${escapeHtml(item.summary)}</p>
+      <div class="card-details">
+        <div class="meta-row"><span>난이도: ${escapeHtml(item.level)}</span><span>소요시간: ${escapeHtml(item.hours)}</span></div>
+        <ul>
+          ${details.map((d) => `<li>${escapeHtml(d)}</li>`).join('')}
+        </ul>
+        ${detailLink}
+      </div>
+    </div>`;
+    })
+    .join('');
+
+  grid.querySelectorAll('.curriculum-card').forEach((card) => observeReveal(card));
+}
+
+// Load editable content from the admin-managed API (falls back to the text
+// already in the page if the API isn't reachable, e.g. when opened locally).
+fetch('/api/content')
+  .then((res) => (res.ok ? res.json() : null))
+  .then((content) => {
+    if (!content) {
+      renderCurriculum(DEFAULT_CURRICULUM);
+      return;
+    }
+    const set = (id, html) => {
+      const el = document.getElementById(id);
+      if (el && html) el.innerHTML = html;
+    };
+    set('hero-eyebrow', content.heroEyebrow);
+    set('hero-title', content.heroTitle);
+    set('hero-subtitle', content.heroSubtitle);
+    set('hero-cta', content.ctaLabel);
+    if (content.contactEmail) {
+      const link = document.getElementById('contact-email-link');
+      if (link) link.href = `mailto:${content.contactEmail}`;
+    }
+    if (content.contactPhone || content.contactEmail) {
+      set(
+        'contact-info',
+        `HP. ${content.contactPhone || ''} &nbsp;|&nbsp; ${content.contactEmail || ''}`
+      );
+    }
+    renderCurriculum(content.curriculum && content.curriculum.length ? content.curriculum : DEFAULT_CURRICULUM);
+  })
+  .catch(() => {
+    renderCurriculum(DEFAULT_CURRICULUM);
+  });
+
+// Inquiry form submission
+const inquiryForm = document.getElementById('inquiry-form');
+if (inquiryForm) {
+  inquiryForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const status = document.getElementById('inquiry-status');
+    const formData = new FormData(inquiryForm);
+    const payload = Object.fromEntries(formData.entries());
+    status.textContent = '전송 중...';
+    try {
+      const res = await fetch('/api/inquiries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        status.textContent = '상담 신청이 접수되었습니다. 곧 연락드리겠습니다!';
+        inquiryForm.reset();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        status.textContent = data.error || '전송에 실패했습니다. 잠시 후 다시 시도해주세요.';
       }
-    </style>
-  </head>
-  <body>
-    <main>
-      <h1>vibe3</h1>
-      <p>GitHub에서 Vercel까지 연결된 첫 배포입니다.</p>
-    </main>
-  </body>
+    } catch (err) {
+      status.textContent = '전송에 실패했습니다. 잠시 후 다시 시도해주세요.';
+    }
+  });
+}
+
+document.querySelectorAll('.tl-item').forEach((item, idx) => {
+  item.style.transitionDelay = `${idx * 70}ms`;
+  observeReveal(item);
+});
+</script>
+
+</body>
 </html>

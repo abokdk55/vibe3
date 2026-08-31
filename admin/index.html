@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>관리자 페이지 | 안병옥</title>
+<link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+
+<div id="login-view" class="login-wrap">
+  <form id="login-form" class="login-card">
+    <div class="login-mark">안</div>
+    <h1>관리자 로그인</h1>
+    <p class="login-subtitle">안병옥 강사 랜딩페이지 관리자 전용 페이지입니다.</p>
+    <input type="password" id="password" placeholder="비밀번호" autocomplete="current-password" required>
+    <button type="submit">로그인</button>
+    <p id="login-error" class="error-text"></p>
+    <button type="button" id="show-reset-btn" class="link-btn">비밀번호를 잊으셨나요?</button>
+  </form>
+
+  <form id="reset-form" class="login-card hidden">
+    <h1>비밀번호 재설정</h1>
+    <p class="login-subtitle">복구 코드를 입력하고 새 비밀번호를 설정하세요.</p>
+    <input type="text" id="recovery-code" placeholder="복구 코드" autocomplete="off" required>
+    <input type="password" id="new-password" placeholder="새 비밀번호 (4자 이상)" autocomplete="new-password" required>
+    <button type="submit">비밀번호 변경</button>
+    <p id="reset-error" class="error-text"></p>
+    <p id="reset-success" class="saved-text"></p>
+    <button type="button" id="back-to-login-btn" class="link-btn">로그인으로 돌아가기</button>
+  </form>
+</div>
+
+<div id="dashboard-view" class="dashboard hidden">
+  <nav class="admin-nav">
+    <div class="logo"><span class="logo-mark">안</span>안병옥 <em>관리자</em></div>
+    <div class="admin-nav-links">
+      <button class="tab-btn active" data-tab="inquiries">📋 문의 내역</button>
+      <button class="tab-btn" data-tab="content">✏️ 콘텐츠 수정</button>
+      <button class="tab-btn" data-tab="curriculum">📚 커리큘럼 관리</button>
+    </div>
+    <button id="logout-btn" class="logout-btn">로그아웃</button>
+  </nav>
+
+  <section id="tab-inquiries" class="tab-panel">
+    <h2>문의 내역</h2>
+    <p class="panel-subtitle">랜딩페이지의 상담 신청 폼으로 접수된 문의 목록입니다.</p>
+
+    <div id="stats-row" class="stats-row">
+      <div class="stat-card">
+        <span class="stat-value" id="stat-total">0</span>
+        <span class="stat-label">전체 문의</span>
+      </div>
+      <div class="stat-card stat-new">
+        <span class="stat-value" id="stat-new">0</span>
+        <span class="stat-label">신규</span>
+      </div>
+      <div class="stat-card stat-contacted">
+        <span class="stat-value" id="stat-contacted">0</span>
+        <span class="stat-label">연락완료</span>
+      </div>
+      <div class="stat-card stat-done">
+        <span class="stat-value" id="stat-done">0</span>
+        <span class="stat-label">처리완료</span>
+      </div>
+    </div>
+
+    <div id="inquiries-list" class="inquiries-list"></div>
+  </section>
+
+  <section id="tab-content" class="tab-panel hidden">
+    <h2>콘텐츠 수정</h2>
+    <p class="panel-subtitle">저장하면 랜딩페이지에 바로 반영됩니다.</p>
+    <form id="content-form" class="content-form">
+      <div class="form-section">
+        <h3>히어로 섹션</h3>
+        <label>상단 소개 문구 (eyebrow)
+          <input type="text" name="heroEyebrow">
+        </label>
+        <label>메인 헤드라인 <span class="hint">줄바꿈은 &lt;br&gt; 사용</span>
+          <textarea name="heroTitle" rows="2"></textarea>
+        </label>
+        <label>서브 문구 <span class="hint">줄바꿈은 &lt;br&gt; 사용</span>
+          <textarea name="heroSubtitle" rows="2"></textarea>
+        </label>
+        <label>메인 버튼 문구
+          <input type="text" name="ctaLabel">
+        </label>
+      </div>
+
+      <div class="form-section">
+        <h3>연락처</h3>
+        <label>이메일
+          <input type="email" name="contactEmail">
+        </label>
+        <label>전화번호
+          <input type="text" name="contactPhone">
+        </label>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="save-btn">저장하기</button>
+        <p id="content-saved" class="saved-text"></p>
+      </div>
+    </form>
+  </section>
+
+  <section id="tab-curriculum" class="tab-panel hidden">
+    <h2>커리큘럼 관리</h2>
+    <p class="panel-subtitle">항목을 추가·수정·삭제하고 저장하면 랜딩페이지 커리큘럼 섹션에 바로 반영됩니다.</p>
+    <div id="curriculum-admin-list" class="curriculum-admin-list"></div>
+    <div class="curriculum-actions">
+      <button type="button" id="add-curriculum-btn" class="ghost-add-btn">+ 새 커리큘럼 추가</button>
+      <button type="button" id="save-curriculum-btn" class="save-btn">전체 저장하기</button>
+      <p id="curriculum-saved" class="saved-text"></p>
+    </div>
+  </section>
+</div>
+
+<script src="/admin/admin.js"></script>
+</body>
+</html>
