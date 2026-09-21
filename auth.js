@@ -12,6 +12,16 @@
     return div.innerHTML;
   }
 
+  function getFriendlyAuthError(error) {
+    const message = error && error.message ? error.message : '';
+
+    if (message.includes('환경변수가 설정되지 않았습니다')) {
+      return '로그인 서비스 연결 설정이 필요합니다. 관리자에게 문의해주세요.';
+    }
+
+    return '로그인 서비스에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.';
+  }
+
   async function getSupabaseClient() {
     if (clientPromise) return clientPromise;
 
@@ -22,6 +32,10 @@
           throw new Error(config && config.error ? config.error : 'Supabase 설정을 불러오지 못했습니다.');
         }
         return window.supabase.createClient(config.url, config.anonKey);
+      })
+      .catch((error) => {
+        clientPromise = null;
+        throw error;
       });
 
     return clientPromise;
@@ -58,15 +72,17 @@
     });
   }
 
+  function renderAuthUnavailable(error) {
+    const message = getFriendlyAuthError(error);
+    document.querySelectorAll('[data-auth-nav]').forEach((container) => {
+      container.innerHTML = `<span class="auth-unavailable">${escapeHtml(message)}</span>`;
+    });
+  }
+
   async function updateAuthNav() {
-    try {
-      const session = await getSession();
-      renderAuthNav(session);
-      return session;
-    } catch (error) {
-      renderAuthNav(null);
-      return null;
-    }
+    const session = await getSession();
+    renderAuthNav(session);
+    return session;
   }
 
   async function requireAuth() {
@@ -83,15 +99,25 @@
     getSupabaseClient,
     getSession,
     getRedirectPath,
+    getFriendlyAuthError,
     requireAuth,
     updateAuthNav,
   };
 
   document.addEventListener('DOMContentLoaded', async () => {
-    const client = await getSupabaseClient().catch(() => null);
-    const session = document.body.dataset.requireAuth === 'true'
-      ? await requireAuth()
-      : await updateAuthNav();
+    let client = null;
+    let session = null;
+    let error = null;
+
+    try {
+      client = await getSupabaseClient();
+      session = document.body.dataset.requireAuth === 'true'
+        ? await requireAuth()
+        : await updateAuthNav();
+    } catch (authError) {
+      error = authError;
+      renderAuthUnavailable(authError);
+    }
 
     if (client) {
       client.auth.onAuthStateChange(() => {
@@ -99,6 +125,6 @@
       });
     }
 
-    document.dispatchEvent(new CustomEvent('app-auth-ready', { detail: { session } }));
+    document.dispatchEvent(new CustomEvent('app-auth-ready', { detail: { session, error } }));
   });
 })();

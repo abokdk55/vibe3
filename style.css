@@ -79,6 +79,15 @@ img { max-width: 100%; display: block; }
   white-space: nowrap;
 }
 
+.auth-unavailable {
+  color: #b42318;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.4;
+  max-width: 220px;
+  text-align: right;
+}
+
 .auth-link,
 .auth-logout {
   color: #d1d5db;
@@ -995,6 +1004,13 @@ footer {
   padding: 12px 14px;
   color: #111827;
   font: inherit;
+}
+
+.auth-form input:disabled,
+.auth-form textarea:disabled,
+.auth-form button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
 .auth-form input:focus,

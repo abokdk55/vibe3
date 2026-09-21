@@ -45,6 +45,15 @@
 const signupForm = document.getElementById('signup-form');
 const signupStatus = document.getElementById('signup-status');
 
+document.addEventListener('app-auth-ready', (event) => {
+  if (event.detail.error) {
+    signupForm.querySelectorAll('input, button').forEach((element) => {
+      element.disabled = true;
+    });
+    signupStatus.textContent = window.appAuth.getFriendlyAuthError(event.detail.error);
+  }
+});
+
 signupForm.addEventListener('submit', async (event) => {
   event.preventDefault();
   signupStatus.textContent = '가입 처리 중입니다...';

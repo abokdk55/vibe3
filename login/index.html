@@ -46,6 +46,14 @@ const loginForm = document.getElementById('login-form');
 const loginStatus = document.getElementById('login-status');
 
 document.addEventListener('app-auth-ready', async (event) => {
+  if (event.detail.error) {
+    loginForm.querySelectorAll('input, button').forEach((element) => {
+      element.disabled = true;
+    });
+    loginStatus.textContent = window.appAuth.getFriendlyAuthError(event.detail.error);
+    return;
+  }
+
   if (event.detail.session) {
     window.location.href = window.appAuth.getRedirectPath();
   }
