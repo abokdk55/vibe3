@@ -853,6 +853,10 @@ footer {
   margin: 0 auto;
 }
 
+.list-actions {
+  margin-top: 28px;
+}
+
 .items-section {
   max-width: 1080px;
   margin: 0 auto;
@@ -975,6 +979,12 @@ footer {
   color: #374151;
   font-size: 0.9rem;
   font-weight: 800;
+}
+
+.field-hint {
+  color: #6b7280;
+  font-size: 0.78rem;
+  font-weight: 600;
 }
 
 .auth-form input,
