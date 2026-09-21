@@ -14,6 +14,21 @@ body {
 a { text-decoration: none; }
 ul { list-style: none; }
 img { max-width: 100%; display: block; }
+html { scroll-padding-top: 150px; }
+.skip-link { position: fixed; top: -100px; left: 16px; z-index: 1000; background: #fff; padding: 12px; color: #111827; }
+.skip-link:focus { top: 12px; }
+:focus-visible { outline: 3px solid #2563eb; outline-offset: 4px; }
+button:disabled { opacity: .65; cursor: wait; }
+.course-fallback { padding: 24px; border: 1px solid #d1d5db; border-radius: 16px; color: #166534; }
+.inquiry-form label { text-align: left; display: grid; gap: 6px; }
+.contact-cta .privacy-note { font-size: .8rem; margin: 0; text-align: left; }
+.contact-info a { color: inherit; text-decoration: underline; }
+#content-status { margin-bottom: 16px; }
+.curriculum-card .meta-row { margin-top: 18px; flex-wrap: wrap; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  .curriculum-card, .tl-item { opacity: 1 !important; transform: none !important; }
+}
 
 /* Navbar */
 .navbar {

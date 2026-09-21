@@ -1,4 +1,5 @@
 const { put, get } = require('@vercel/blob');
+const { HttpError } = require('./http');
 
 const DEFAULT_CONTENT = {
   heroEyebrow: '관세청 38년 경력 관세사 · AI 콘텐츠 · 교육 전문가',
@@ -96,54 +97,108 @@ const DEFAULT_CONTENT = {
 };
 
 async function fetchJsonBlob(pathname, fallback) {
-  try {
-    const result = await get(pathname, {
-      access: 'private',
-      token: process.env.BLOB_READ_WRITE_TOKEN,
-    });
-    if (!result) return fallback;
-    const text = await new Response(result.stream).text();
-    return JSON.parse(text);
-  } catch (err) {
-    return fallback;
-  }
+  const snapshot = await readSnapshot(pathname);
+  return snapshot === null ? fallback : snapshot.data;
 }
 
-async function putJsonBlob(pathname, data) {
-  await put(pathname, JSON.stringify(data, null, 2), {
+async function readSnapshot(pathname) {
+  const result = await get(pathname, {
+    access: 'private', useCache: false, token: process.env.BLOB_READ_WRITE_TOKEN,
+  });
+  if (result === null) return null;
+  if (result.statusCode !== 200 || !result.stream || !result.blob?.etag) {
+    throw new Error('Invalid storage response');
+  }
+  return { data: JSON.parse(await new Response(result.stream).text()), etag: result.blob.etag };
+}
+
+async function writeSnapshot(pathname, data, snapshot) {
+  return put(pathname, JSON.stringify(data, null, 2), {
     access: 'private',
     contentType: 'application/json',
-    allowOverwrite: true,
+    addRandomSuffix: false,
+    allowOverwrite: snapshot !== null,
+    ...(snapshot ? { ifMatch: snapshot.etag } : {}),
     token: process.env.BLOB_READ_WRITE_TOKEN,
   });
 }
 
+async function updateJsonBlob(pathname, fallback, update) {
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const snapshot = await readSnapshot(pathname);
+    const next = update(snapshot === null ? fallback : snapshot.data);
+    try {
+      await writeSnapshot(pathname, next, snapshot);
+      return next;
+    } catch (error) {
+      const conflict = error.constructor?.name === 'BlobPreconditionFailedError' || error.name === 'BlobPreconditionFailedError';
+      if (conflict) continue;
+      // Creation races may be reported as a generic BlobError by the SDK.
+      if (snapshot === null && await readSnapshot(pathname) !== null) continue;
+      throw error;
+    }
+  }
+  throw new HttpError(409, '다른 변경과 겹쳤습니다. 다시 시도해주세요.');
+}
+
+function object(value) {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
 async function getContent() {
-  const stored = await fetchJsonBlob('data/content.json', null);
-  return { ...DEFAULT_CONTENT, ...(stored || {}) };
+  const snapshot = await readSnapshot('data/content.json');
+  const stored = snapshot === null ? null : snapshot.data;
+  if (snapshot !== null && !object(stored)) throw new Error('Invalid stored content');
+  const content = { ...DEFAULT_CONTENT, ...(stored || {}) };
+  if (!Array.isArray(content.curriculum)) throw new Error('Invalid stored curriculum');
+  content.curriculum = content.curriculum.map((item) => {
+    if (!object(item) || !Array.isArray(item.details)) throw new Error('Invalid stored course');
+    const original = DEFAULT_CONTENT.curriculum.find((course) => course.detailUrl === item.detailUrl);
+    return { ...item, id: item.id || original?.id || 'legacy-' + require('crypto').createHash('sha256').update(JSON.stringify(item)).digest('hex').slice(0, 16) };
+  });
+  return content;
 }
 
 async function saveContent(content) {
-  await putJsonBlob('data/content.json', content);
+  return updateJsonBlob('data/content.json', {}, (current) => {
+    if (!object(current)) throw new Error('Invalid stored content');
+    return { ...DEFAULT_CONTENT, ...current, ...content };
+  });
 }
 
 async function getInquiries() {
-  return fetchJsonBlob('data/inquiries.json', []);
+  const entries = await fetchJsonBlob('data/inquiries.json', []);
+  if (!Array.isArray(entries)) throw new Error('Invalid stored inquiries');
+  return entries;
 }
 
 async function addInquiry(entry) {
-  const list = await getInquiries();
-  list.unshift(entry);
-  await putJsonBlob('data/inquiries.json', list);
-  return list;
+  return updateJsonBlob('data/inquiries.json', [], (entries) => {
+    if (!Array.isArray(entries)) throw new Error('Invalid stored inquiries');
+    return entries.some((item) => item.id === entry.id) ? entries : [entry, ...entries];
+  });
+}
+
+async function updateInquiryStatus(id, status) {
+  return updateJsonBlob('data/inquiries.json', [], (entries) => {
+    if (!Array.isArray(entries)) throw new Error('Invalid stored inquiries');
+    if (!entries.some((item) => item.id === id)) throw new HttpError(404, '문의를 찾을 수 없습니다.');
+    return entries.map((item) => item.id === id ? { ...item, status } : item);
+  });
 }
 
 async function getAuthConfig() {
-  return fetchJsonBlob('data/admin-auth.json', null);
+  const snapshot = await readSnapshot('data/admin-auth.json');
+  if (snapshot === null) return null;
+  const config = snapshot.data;
+  if (!object(config) || !/^[a-f0-9]{128}$/.test(config.hash) || !/^[a-f0-9]{32}$/.test(config.salt)) {
+    throw new Error('Invalid stored authentication');
+  }
+  return config;
 }
 
 async function saveAuthConfig(config) {
-  await putJsonBlob('data/admin-auth.json', config);
+  return updateJsonBlob('data/admin-auth.json', null, () => config);
 }
 
 module.exports = {
@@ -152,7 +207,8 @@ module.exports = {
   saveContent,
   getInquiries,
   addInquiry,
-  putJsonBlob,
+  updateInquiryStatus,
   getAuthConfig,
   saveAuthConfig,
+  updateJsonBlob,
 };

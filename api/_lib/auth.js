@@ -1,72 +1,52 @@
 const crypto = require('crypto');
-
+const { getAuthConfig } = require('./data');
 const COOKIE_NAME = 'admin_session';
-const MAX_AGE_SECONDS = 60 * 60 * 8; // 8 hours
+const MAX_AGE_SECONDS = 8 * 60 * 60;
 
-function sign(value) {
-  const hmac = crypto.createHmac('sha256', process.env.SESSION_SECRET);
-  hmac.update(value);
-  return hmac.digest('hex');
+function secret() {
+  const value = process.env.SESSION_SECRET;
+  if (typeof value !== 'string' || value.length < 32) throw new Error('SESSION_SECRET must contain at least 32 characters');
+  return value;
 }
-
-function createSessionCookie() {
-  const expires = Date.now() + MAX_AGE_SECONDS * 1000;
-  const payload = `admin.${expires}`;
-  const sig = sign(payload);
-  const token = `${payload}.${sig}`;
-  return `${COOKIE_NAME}=${token}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${MAX_AGE_SECONDS}`;
+function sign(value) { return crypto.createHmac('sha256', secret()).update(value).digest('hex'); }
+function version(config) {
+  return sign(config ? config.hash + '.' + config.salt : 'bootstrap.' + (process.env.ADMIN_PASSWORD || ''));
 }
-
+function createSessionCookie(config) {
+  const payload = 'admin.' + (Date.now() + MAX_AGE_SECONDS * 1000) + '.' + version(config);
+  return COOKIE_NAME + '=' + payload + '.' + sign(payload) + '; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=' + MAX_AGE_SECONDS;
+}
 function clearSessionCookie() {
-  return `${COOKIE_NAME}=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0`;
+  return COOKIE_NAME + '=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0';
 }
-
-function parseCookies(header) {
-  const out = {};
-  if (!header) return out;
-  header.split(';').forEach((part) => {
-    const idx = part.indexOf('=');
-    if (idx === -1) return;
-    const key = part.slice(0, idx).trim();
-    const val = part.slice(idx + 1).trim();
-    out[key] = decodeURIComponent(val);
-  });
-  return out;
-}
-
-function isAuthenticated(req) {
-  const cookies = parseCookies(req.headers.cookie);
-  const token = cookies[COOKIE_NAME];
-  if (!token) return false;
+async function isAuthenticated(req) {
+  const header = req.headers?.cookie;
+  if (typeof header !== 'string' || header.length > 8192) return false;
+  const matches = header.split(';').map((part) => part.trim()).filter((part) => part.startsWith(COOKIE_NAME + '='));
+  if (matches.length !== 1) return false;
+  let token;
+  try { token = decodeURIComponent(matches[0].slice(COOKIE_NAME.length + 1)); } catch { return false; }
   const parts = token.split('.');
-  if (parts.length !== 3) return false;
-  const [prefix, expires, sig] = parts;
-  const payload = `${prefix}.${expires}`;
-  const expected = sign(payload);
-  if (expected.length !== sig.length) return false;
-  const valid = crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(sig));
-  if (!valid) return false;
-  if (Date.now() > Number(expires)) return false;
-  return true;
+  if (parts.length !== 4) return false;
+  const [prefix, expires, sessionVersion, signature] = parts;
+  if (prefix !== 'admin' || !/^\d{13}$/.test(expires) || !/^[a-f0-9]{64}$/.test(signature) || !/^[a-f0-9]{64}$/.test(sessionVersion)) return false;
+  const expiry = Number(expires);
+  if (!Number.isSafeInteger(expiry) || expiry <= Date.now() || expiry > Date.now() + MAX_AGE_SECONDS * 1000) return false;
+  const expected = sign(parts.slice(0, 3).join('.'));
+  if (!crypto.timingSafeEqual(Buffer.from(expected, 'hex'), Buffer.from(signature, 'hex'))) return false;
+  const config = await getAuthConfig();
+  return crypto.timingSafeEqual(Buffer.from(version(config), 'hex'), Buffer.from(sessionVersion, 'hex'));
 }
-
 function hashPassword(password, salt = crypto.randomBytes(16).toString('hex')) {
-  const hash = crypto.scryptSync(password, salt, 64).toString('hex');
-  return { hash, salt };
+  return { hash: crypto.scryptSync(password, salt, 64).toString('hex'), salt };
 }
-
 function verifyPassword(password, hash, salt) {
-  const attempt = crypto.scryptSync(password, salt, 64).toString('hex');
-  const a = Buffer.from(attempt, 'hex');
-  const b = Buffer.from(hash, 'hex');
-  if (a.length !== b.length) return false;
-  return crypto.timingSafeEqual(a, b);
+  if (typeof password !== 'string' || password.length > 128 || !/^[a-f0-9]{128}$/.test(hash) || !/^[a-f0-9]{32}$/.test(salt)) return false;
+  return crypto.timingSafeEqual(crypto.scryptSync(password, salt, 64), Buffer.from(hash, 'hex'));
 }
-
-module.exports = {
-  createSessionCookie,
-  clearSessionCookie,
-  isAuthenticated,
-  hashPassword,
-  verifyPassword,
-};
+function compareSecret(provided, expected) {
+  if (typeof expected !== 'string' || !expected || typeof provided !== 'string') return false;
+  const digest = (value) => crypto.createHash('sha256').update(value).digest();
+  return crypto.timingSafeEqual(digest(provided), digest(expected));
+}
+module.exports = { createSessionCookie, clearSessionCookie, isAuthenticated, hashPassword, verifyPassword, compareSecret, secret };

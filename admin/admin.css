@@ -7,6 +7,16 @@ body {
 }
 
 .hidden { display: none !important; }
+:focus-visible { outline: 3px solid #2563eb; outline-offset: 3px; }
+button:disabled, select:disabled { opacity: .65; cursor: wait; }
+.dashboard-feedback { max-width: 820px; margin: 20px auto 0; padding: 0 5vw; display: flex; gap: 12px; align-items: center; }
+.dashboard-feedback button { padding: 8px 12px; white-space: nowrap; }
+.admin-nav-links { flex-wrap: wrap; justify-content: center; }
+.inquiry-message, .inquiry-contact { overflow-wrap: anywhere; }
+.curriculum-admin-card input, .curriculum-admin-card textarea, .content-form input, .content-form textarea { width: 100%; min-width: 0; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
 
 /* Login */
 .login-wrap {

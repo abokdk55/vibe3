@@ -1,285 +1,201 @@
-const loginView = document.getElementById('login-view');
-const dashboardView = document.getElementById('dashboard-view');
-const loginForm = document.getElementById('login-form');
-const loginError = document.getElementById('login-error');
-
-function showDashboard() {
-  loginView.classList.add('hidden');
-  dashboardView.classList.remove('hidden');
-  loadInquiries();
-  loadContent();
-}
-
-function showLogin() {
-  dashboardView.classList.add('hidden');
-  loginView.classList.remove('hidden');
-}
-
-async function checkSession() {
-  const res = await fetch('/api/inquiries');
-  if (res.ok) {
-    showDashboard();
-  } else {
-    showLogin();
-  }
-}
-
-loginForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  loginError.textContent = '';
-  const password = document.getElementById('password').value;
-  const res = await fetch('/api/login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ password }),
-  });
-  if (res.ok) {
-    document.getElementById('password').value = '';
-    showDashboard();
-  } else {
-    const data = await res.json().catch(() => ({}));
-    loginError.textContent = data.error || '로그인에 실패했습니다.';
-  }
-});
-
-document.getElementById('logout-btn').addEventListener('click', async () => {
-  await fetch('/api/logout', { method: 'POST' });
-  showLogin();
-});
-
-// Forgot password / reset flow
-const resetForm = document.getElementById('reset-form');
-const resetError = document.getElementById('reset-error');
-const resetSuccess = document.getElementById('reset-success');
-
-document.getElementById('show-reset-btn').addEventListener('click', () => {
-  loginForm.classList.add('hidden');
-  resetForm.classList.remove('hidden');
-  resetError.textContent = '';
-  resetSuccess.textContent = '';
-});
-
-document.getElementById('back-to-login-btn').addEventListener('click', () => {
-  resetForm.classList.add('hidden');
-  loginForm.classList.remove('hidden');
-});
-
-resetForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  resetError.textContent = '';
-  resetSuccess.textContent = '';
-  const recoveryCode = document.getElementById('recovery-code').value;
-  const newPassword = document.getElementById('new-password').value;
-  const res = await fetch('/api/reset-password', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ recoveryCode, newPassword }),
-  });
-  if (res.ok) {
-    resetSuccess.textContent = '비밀번호가 변경되었습니다. 이제 로그인해주세요.';
-    document.getElementById('recovery-code').value = '';
-    document.getElementById('new-password').value = '';
-  } else {
-    const data = await res.json().catch(() => ({}));
-    resetError.textContent = data.error || '비밀번호 변경에 실패했습니다.';
-  }
-});
-
-// Tabs
-document.querySelectorAll('.tab-btn').forEach((btn) => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.tab-btn').forEach((b) => b.classList.remove('active'));
-    btn.classList.add('active');
-    document.querySelectorAll('.tab-panel').forEach((p) => p.classList.add('hidden'));
-    document.getElementById(`tab-${btn.dataset.tab}`).classList.remove('hidden');
-  });
-});
-
-// Inquiries
+'use strict';
+const $ = (id) => document.getElementById(id);
+const loginForm = $('login-form');
+const contentForm = $('content-form');
+const curriculumList = $('curriculum-admin-list');
 const statusLabels = { new: '신규', contacted: '연락완료', done: '처리완료' };
+let generation = 0;
+const dirty = new Set();
+let contentLoaded = false;
 
+function node(tag, text, className) {
+  const el = document.createElement(tag);
+  if (text !== undefined) el.textContent = text;
+  if (className) el.className = className;
+  return el;
+}
+function showLogin(message = '') {
+  generation++;
+  $('dashboard-view').classList.add('hidden');
+  $('login-view').classList.remove('hidden');
+  $('reset-form').classList.add('hidden');
+  loginForm.classList.remove('hidden');
+  $('inquiries-list').replaceChildren();
+  curriculumList.replaceChildren();
+  contentForm.reset();
+  contentLoaded = false; dirty.clear();
+  $('login-error').textContent = message;
+}
+async function request(path, method = 'GET', data) {
+  let res;
+  try {
+    res = await fetch(path, { method, cache: 'no-store',
+      ...(method !== 'GET' ? { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data ?? {}) } : {}) });
+  } catch { throw Error('서버에 연결하지 못했습니다. 입력 내용은 유지됩니다. 다시 시도해주세요.'); }
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    if (res.status === 401 && !$('dashboard-view').classList.contains('hidden')) showLogin('로그인이 만료되었습니다. 다시 로그인해주세요.');
+    const error = Error(body.error || '요청을 처리하지 못했습니다. 다시 시도해주세요.');
+    error.status = res.status;
+    throw error;
+  }
+  return body;
+}
+async function action(button, message, task) {
+  if (button.disabled) return;
+  button.disabled = true;
+  message.textContent = '처리 중입니다…';
+  try { await task(); }
+  catch (error) { message.textContent = error.message; }
+  finally { button.disabled = false; }
+}
 function updateStats(list) {
-  document.getElementById('stat-total').textContent = list.length;
-  document.getElementById('stat-new').textContent = list.filter((i) => i.status === 'new').length;
-  document.getElementById('stat-contacted').textContent = list.filter((i) => i.status === 'contacted').length;
-  document.getElementById('stat-done').textContent = list.filter((i) => i.status === 'done').length;
+  $('stat-total').textContent = list.length;
+  for (const status of Object.keys(statusLabels)) $('stat-' + status).textContent = list.filter((item) => item.status === status).length;
 }
-
-async function loadInquiries() {
-  const res = await fetch('/api/inquiries');
-  if (!res.ok) return;
-  const list = await res.json();
-  const container = document.getElementById('inquiries-list');
-
+async function loadInquiries(existing) {
+  const current = generation;
+  const list = existing || await request('/api/inquiries');
+  if (current !== generation) return;
+  if (!Array.isArray(list)) throw Error('문의 데이터를 읽을 수 없습니다.');
   updateStats(list);
-
-  if (list.length === 0) {
-    container.innerHTML = '<p class="empty-text">아직 접수된 문의가 없습니다.</p>';
-    return;
-  }
-
-  container.innerHTML = list
-    .map(
-      (item) => `
-    <div class="inquiry-card" data-id="${item.id}">
-      <div class="inquiry-header">
-        <strong>${escapeHtml(item.name)}</strong>
-        <span class="status-badge status-${item.status}">${statusLabels[item.status] || item.status}</span>
-      </div>
-      <div class="inquiry-contact">${escapeHtml(item.contact)}</div>
-      <p class="inquiry-message">${escapeHtml(item.message || '(메시지 없음)')}</p>
-      <div class="inquiry-footer">
-        <span class="inquiry-date">${new Date(item.createdAt).toLocaleString('ko-KR')}</span>
-        <select class="status-select">
-          <option value="new" ${item.status === 'new' ? 'selected' : ''}>신규</option>
-          <option value="contacted" ${item.status === 'contacted' ? 'selected' : ''}>연락완료</option>
-          <option value="done" ${item.status === 'done' ? 'selected' : ''}>처리완료</option>
-        </select>
-      </div>
-    </div>
-  `
-    )
-    .join('');
-
-  container.querySelectorAll('.status-select').forEach((select) => {
-    select.addEventListener('change', async (e) => {
-      const card = e.target.closest('.inquiry-card');
-      const id = card.dataset.id;
-      await fetch('/api/inquiries', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, status: e.target.value }),
+  const cards = list.map((item) => {
+    const card = node('article', undefined, 'inquiry-card');
+    const header = node('div', undefined, 'inquiry-header');
+    const status = Object.hasOwn(statusLabels, item.status) ? item.status : 'new';
+    header.append(node('strong', item.name), node('span', statusLabels[status], 'status-badge status-' + status));
+    const footer = node('div', undefined, 'inquiry-footer');
+    footer.append(node('span', new Date(item.createdAt).toLocaleString('ko-KR'), 'inquiry-date'));
+    const select = node('select', undefined, 'status-select');
+    select.setAttribute('aria-label', String(item.name) + ' 문의 상태');
+    for (const [value, label] of Object.entries(statusLabels)) {
+      const option = node('option', label); option.value = value; select.append(option);
+    }
+    select.value = status;
+    select.addEventListener('change', () => {
+      action(select, $('dashboard-status'), async () => {
+        try { await request('/api/inquiries', 'PATCH', { id: item.id, status: select.value }); }
+        catch (error) { select.value = status; throw error; }
+        await loadInquiries();
+        $('dashboard-status').textContent = '문의 상태를 저장했습니다.';
       });
-      loadInquiries();
     });
+    footer.append(select);
+    card.append(header, node('div', item.contact, 'inquiry-contact'), node('p', item.message || '(메시지 없음)', 'inquiry-message'), footer);
+    return card;
   });
+  $('inquiries-list').replaceChildren(...(cards.length ? cards : [node('p', '아직 접수된 문의가 없습니다.', 'empty-text')]));
 }
-
-function escapeHtml(str) {
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
+function renderCourse(item) {
+  const card = node('div', undefined, 'curriculum-admin-card');
+  card.dataset.id = item.id || crypto.randomUUID();
+  const header = node('div', undefined, 'curriculum-card-header');
+  const remove = node('button', '삭제', 'remove-curriculum-btn'); remove.type = 'button';
+  remove.addEventListener('click', () => { card.remove(); dirty.add('curriculum'); });
+  header.append(node('span', '커리큘럼 항목'), remove); card.append(header);
+  const fields = [
+    ['tag', '태그', 50], ['title', '제목', 150], ['level', '난이도', 30], ['hours', '소요시간', 50],
+    ['summary', '요약', 1000], ['details', '세부 학습 내용 (한 줄에 하나씩)', 15030],
+    ['detailUrl', '상세페이지 링크 (선택)', 500],
+  ];
+  for (const [key, title, maximum] of fields) {
+    const label = node('label', title);
+    const input = node(key === 'details' || key === 'summary' ? 'textarea' : 'input');
+    input.dataset.field = key; input.maxLength = maximum;
+    input.value = key === 'details' ? (Array.isArray(item.details) ? item.details.join('\n') : '') : (item[key] || '');
+    label.append(input); card.append(label);
+  }
+  return card;
 }
-
-// Content editor
-const contentForm = document.getElementById('content-form');
-
+function renderCurriculum(list) { curriculumList.replaceChildren(...list.map(renderCourse)); }
 async function loadContent() {
-  const res = await fetch('/api/content');
-  if (!res.ok) return;
-  const content = await res.json();
-  Object.entries(content).forEach(([key, value]) => {
-    const field = contentForm.elements[key];
-    if (field && typeof value !== 'object') field.value = value;
+  const current = generation;
+  const content = await request('/api/content');
+  if (current !== generation) return;
+  if (!Array.isArray(content.curriculum)) throw Error('콘텐츠 데이터를 읽을 수 없습니다.');
+  for (const [key, value] of Object.entries(content)) {
+    const field = contentForm.elements.namedItem(key);
+    if (field && typeof value === 'string') field.value = value;
+  }
+  renderCurriculum(content.curriculum); contentLoaded = true;
+}
+async function showDashboard(inquiries) {
+  generation++;
+  $('login-view').classList.add('hidden');
+  $('dashboard-view').classList.remove('hidden');
+  $('dashboard-status').textContent = '불러오는 중입니다…';
+  const outcomes = await Promise.allSettled([loadInquiries(inquiries), loadContent()]);
+  if ($('dashboard-view').classList.contains('hidden')) return;
+  $('dashboard-status').textContent = outcomes.filter((r) => r.status === 'rejected').map((r) => r.reason.message).join(' ');
+}
+loginForm.addEventListener('submit', (event) => {
+  event.preventDefault();
+  action(loginForm.querySelector('[type="submit"]'), $('login-error'), async () => {
+    await request('/api/login', 'POST', { password: $('password').value });
+    $('password').value = ''; $('login-error').textContent = '';
+    await showDashboard();
   });
-  renderCurriculumAdmin(content.curriculum || []);
-}
-
-// Curriculum admin
-const curriculumList = document.getElementById('curriculum-admin-list');
-
-function curriculumCardMarkup(item, localId) {
-  const details = Array.isArray(item.details) ? item.details.join('\n') : '';
-  return `
-    <div class="curriculum-admin-card" data-local-id="${localId}">
-      <div class="curriculum-card-header">
-        <span>커리큘럼 항목</span>
-        <button type="button" class="remove-curriculum-btn">삭제</button>
-      </div>
-      <div class="row">
-        <label>태그
-          <input type="text" data-field="tag" value="${escapeHtml(item.tag || '')}">
-        </label>
-        <label>제목
-          <input type="text" data-field="title" value="${escapeHtml(item.title || '')}">
-        </label>
-        <label>난이도
-          <input type="text" data-field="level" value="${escapeHtml(item.level || '')}" placeholder="입문/중급/실무">
-        </label>
-        <label>소요시간
-          <input type="text" data-field="hours" value="${escapeHtml(item.hours || '')}" placeholder="예: 2시간">
-        </label>
-      </div>
-      <label>요약 (카드에 항상 보이는 한 줄 설명)
-        <input type="text" data-field="summary" value="${escapeHtml(item.summary || '')}">
-      </label>
-      <label>세부 학습 내용 <span class="hint">한 줄에 하나씩</span>
-        <textarea data-field="details" rows="3">${escapeHtml(details)}</textarea>
-      </label>
-      <label>상세페이지 링크 <span class="hint">선택 사항, 비워두면 "더 알아보기" 링크가 생략됩니다</span>
-        <input type="text" data-field="detailUrl" value="${escapeHtml(item.detailUrl || '')}">
-      </label>
-    </div>
-  `;
-}
-
-function renderCurriculumAdmin(list) {
-  curriculumList.innerHTML = list
-    .map((item, idx) => curriculumCardMarkup(item, `c${idx}-${Date.now()}`))
-    .join('');
-  attachRemoveHandlers();
-}
-
-function attachRemoveHandlers() {
-  curriculumList.querySelectorAll('.remove-curriculum-btn').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      btn.closest('.curriculum-admin-card').remove();
+});
+$('logout-btn').addEventListener('click', () => {
+  action($('logout-btn'), $('dashboard-status'), async () => { await request('/api/logout', 'POST'); showLogin(); });
+});
+$('show-reset-btn').addEventListener('click', () => {
+  loginForm.classList.add('hidden'); $('reset-form').classList.remove('hidden');
+  $('reset-error').textContent = ''; $('reset-success').textContent = ''; $('recovery-code').focus();
+});
+$('back-to-login-btn').addEventListener('click', () => { showLogin(); $('password').focus(); });
+$('reset-form').addEventListener('submit', (event) => {
+  event.preventDefault();
+  action($('reset-form').querySelector('[type="submit"]'), $('reset-error'), async () => {
+    await request('/api/reset-password', 'POST', { recoveryCode: $('recovery-code').value, newPassword: $('new-password').value });
+    $('reset-form').reset(); $('reset-error').textContent = '';
+    $('reset-success').textContent = '비밀번호를 변경했습니다. 로그인으로 돌아가 새 비밀번호를 입력해주세요.';
+  });
+});
+document.querySelectorAll('.tab-btn').forEach((button) => {
+  button.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach((other) => {
+      other.classList.toggle('active', other === button);
+      other.setAttribute('aria-pressed', String(other === button));
     });
+    document.querySelectorAll('.tab-panel').forEach((panel) => panel.classList.toggle('hidden', panel.id !== 'tab-' + button.dataset.tab));
   });
-}
-
-document.getElementById('add-curriculum-btn').addEventListener('click', () => {
-  const card = document.createElement('div');
-  card.innerHTML = curriculumCardMarkup({}, `new-${Date.now()}`);
-  curriculumList.appendChild(card.firstElementChild);
-  attachRemoveHandlers();
 });
-
-document.getElementById('save-curriculum-btn').addEventListener('click', async () => {
-  const cards = curriculumList.querySelectorAll('.curriculum-admin-card');
-  const curriculum = Array.from(cards).map((card) => {
-    const get = (field) => card.querySelector(`[data-field="${field}"]`).value;
-    return {
-      tag: get('tag'),
-      title: get('title'),
-      level: get('level'),
-      hours: get('hours'),
-      summary: get('summary'),
-      details: get('details').split('\n').map((s) => s.trim()).filter(Boolean),
-      detailUrl: get('detailUrl'),
-    };
-  });
-
-  const savedText = document.getElementById('curriculum-saved');
-  const res = await fetch('/api/content', {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ curriculum }),
-  });
-  if (res.ok) {
-    savedText.textContent = '저장되었습니다!';
-    setTimeout(() => (savedText.textContent = ''), 3000);
-  } else {
-    savedText.textContent = '저장에 실패했습니다.';
-  }
+$('add-curriculum-btn').addEventListener('click', () => {
+  if (!contentLoaded) { $('curriculum-saved').textContent = '콘텐츠를 먼저 불러와주세요.'; return; }
+  curriculumList.append(renderCourse({})); dirty.add('curriculum');
 });
-
-contentForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const formData = new FormData(contentForm);
-  const payload = Object.fromEntries(formData.entries());
-  const res = await fetch('/api/content', {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
+curriculumList.addEventListener('input', () => { dirty.add('curriculum'); });
+contentForm.addEventListener('input', () => { dirty.add('content'); });
+$('save-curriculum-btn').addEventListener('click', () => {
+  action($('save-curriculum-btn'), $('curriculum-saved'), async () => {
+    if (!contentLoaded) throw Error('콘텐츠를 먼저 불러와주세요.');
+    const curriculum = [...curriculumList.children].map((card) => {
+      const course = { id: card.dataset.id };
+      card.querySelectorAll('[data-field]').forEach((input) => {
+        course[input.dataset.field] = input.dataset.field === 'details' ? input.value.split('\n').map((s) => s.trim()).filter(Boolean) : input.value;
+      }); return course;
+    });
+    await request('/api/content', 'PUT', { curriculum });
+    dirty.delete('curriculum'); $('curriculum-saved').textContent = '저장했습니다. 홈페이지와 연결된 상세페이지에 반영됩니다.';
   });
-  const savedText = document.getElementById('content-saved');
-  if (res.ok) {
-    savedText.textContent = '저장되었습니다!';
-    setTimeout(() => (savedText.textContent = ''), 3000);
-  } else {
-    savedText.textContent = '저장에 실패했습니다.';
-  }
 });
-
-checkSession();
+contentForm.addEventListener('submit', (event) => {
+  event.preventDefault();
+  action(contentForm.querySelector('[type="submit"]'), $('content-saved'), async () => {
+    if (!contentLoaded) throw Error('콘텐츠를 먼저 불러와주세요.');
+    await request('/api/content', 'PUT', Object.fromEntries(new FormData(contentForm)));
+    dirty.delete('content'); $('content-saved').textContent = '저장했습니다.';
+  });
+});
+$('reload-btn').addEventListener('click', () => {
+  if (dirty.size && !confirm('저장하지 않은 변경을 버리고 다시 불러올까요?')) return;
+  action($('reload-btn'), $('dashboard-status'), async () => { await showDashboard(); dirty.clear(); });
+});
+window.addEventListener('beforeunload', (event) => {
+  if (dirty.size) { event.preventDefault(); event.returnValue = ''; }
+});
+(async () => {
+  try { await showDashboard(await request('/api/inquiries')); }
+  catch (error) { showLogin(error.status === 401 ? '' : error.message); }
+})();

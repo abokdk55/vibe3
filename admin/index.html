@@ -14,20 +14,23 @@
     <div class="login-mark">안</div>
     <h1>관리자 로그인</h1>
     <p class="login-subtitle">안병옥 강사 랜딩페이지 관리자 전용 페이지입니다.</p>
-    <input type="password" id="password" placeholder="비밀번호" autocomplete="current-password" required>
+    <label for="password">비밀번호</label>
+    <input type="password" id="password" maxlength="128" autocomplete="current-password" required>
     <button type="submit">로그인</button>
-    <p id="login-error" class="error-text"></p>
+    <p id="login-error" class="error-text" role="status"></p>
     <button type="button" id="show-reset-btn" class="link-btn">비밀번호를 잊으셨나요?</button>
   </form>
 
   <form id="reset-form" class="login-card hidden">
     <h1>비밀번호 재설정</h1>
     <p class="login-subtitle">복구 코드를 입력하고 새 비밀번호를 설정하세요.</p>
-    <input type="text" id="recovery-code" placeholder="복구 코드" autocomplete="off" required>
-    <input type="password" id="new-password" placeholder="새 비밀번호 (4자 이상)" autocomplete="new-password" required>
+    <label for="recovery-code">복구 코드</label>
+    <input type="password" id="recovery-code" maxlength="256" autocomplete="off" required>
+    <label for="new-password">새 비밀번호 (12~128자)</label>
+    <input type="password" id="new-password" minlength="12" maxlength="128" autocomplete="new-password" required>
     <button type="submit">비밀번호 변경</button>
-    <p id="reset-error" class="error-text"></p>
-    <p id="reset-success" class="saved-text"></p>
+    <p id="reset-error" class="error-text" role="status"></p>
+    <p id="reset-success" class="saved-text" role="status"></p>
     <button type="button" id="back-to-login-btn" class="link-btn">로그인으로 돌아가기</button>
   </form>
 </div>
@@ -36,12 +39,13 @@
   <nav class="admin-nav">
     <div class="logo"><span class="logo-mark">안</span>안병옥 <em>관리자</em></div>
     <div class="admin-nav-links">
-      <button class="tab-btn active" data-tab="inquiries">📋 문의 내역</button>
-      <button class="tab-btn" data-tab="content">✏️ 콘텐츠 수정</button>
-      <button class="tab-btn" data-tab="curriculum">📚 커리큘럼 관리</button>
+      <button class="tab-btn active" data-tab="inquiries" aria-controls="tab-inquiries" aria-pressed="true">📋 문의 내역</button>
+      <button class="tab-btn" data-tab="content" aria-controls="tab-content" aria-pressed="false">✏️ 콘텐츠 수정</button>
+      <button class="tab-btn" data-tab="curriculum" aria-controls="tab-curriculum" aria-pressed="false">📚 커리큘럼 관리</button>
     </div>
     <button id="logout-btn" class="logout-btn">로그아웃</button>
   </nav>
+  <div class="dashboard-feedback"><p id="dashboard-status" role="status"></p><button id="reload-btn" type="button">다시 불러오기</button></div>
 
   <section id="tab-inquiries" class="tab-panel">
     <h2>문의 내역</h2>
@@ -101,7 +105,7 @@
 
       <div class="form-actions">
         <button type="submit" class="save-btn">저장하기</button>
-        <p id="content-saved" class="saved-text"></p>
+        <p id="content-saved" class="saved-text" role="status"></p>
       </div>
     </form>
   </section>
@@ -113,7 +117,7 @@
     <div class="curriculum-actions">
       <button type="button" id="add-curriculum-btn" class="ghost-add-btn">+ 새 커리큘럼 추가</button>
       <button type="button" id="save-curriculum-btn" class="save-btn">전체 저장하기</button>
-      <p id="curriculum-saved" class="saved-text"></p>
+      <p id="curriculum-saved" class="saved-text" role="status"></p>
     </div>
   </section>
 </div>

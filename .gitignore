@@ -1,4 +1,21 @@
-.vercel
-.env*
-node_modules
+# OS and editor files
 .DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Environment and dependencies
+.env
+.env.*
+!.env.example
+node_modules/
+.npm-cache/
+
+# Build output
+dist/
+build/
+.next/
+coverage/
+playwright-report/
+test-results/
+.vercel

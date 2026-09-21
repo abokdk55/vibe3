@@ -1,5 +1,14 @@
 node_modules
 .env.local
+.env.example
+tests
+scripts
+playwright.config.cjs
+playwright-report
+test-results
+.npm-cache
+AGENTS.md
+README.md
 자기소개서.pdf
 프   로   필(안병옥).pdf
 profile.jpg
