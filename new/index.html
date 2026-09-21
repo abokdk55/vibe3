@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>글 등록 | 안병옥 강사</title>
+<link rel="stylesheet" href="/style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/auth.js" defer></script>
+</head>
+<body class="auth-page" data-require-auth="true">
+
+<nav class="navbar">
+  <a href="/" class="logo">안병옥 <span>강사</span></a>
+  <div class="nav-links">
+    <a href="/list/">둘러보기</a>
+    <a href="/#curriculum">커리큘럼</a>
+    <a href="/#contact">문의</a>
+  </div>
+  <div class="auth-nav" data-auth-nav></div>
+</nav>
+
+<main class="auth-main">
+  <section class="auth-panel auth-panel-wide">
+    <span class="section-kicker">NEW ITEM</span>
+    <h1>글 등록</h1>
+    <p>목록 화면에 표시할 강의 정보를 등록하세요.</p>
+
+    <form id="new-item-form" class="auth-form">
+      <label>제목
+        <input type="text" name="title" required>
+      </label>
+      <label>지역
+        <input type="text" name="region" placeholder="예: 서울, 부산, 전국/온라인" required>
+      </label>
+      <label>날짜
+        <input type="date" name="event_date">
+      </label>
+      <label>분야
+        <input type="text" name="tag" value="AI 실무" required>
+      </label>
+      <label>난이도
+        <input type="text" name="level" value="입문" required>
+      </label>
+      <label>소요 시간
+        <input type="text" name="hours" value="2시간" required>
+      </label>
+      <label>요약
+        <textarea name="summary" rows="3" required></textarea>
+      </label>
+      <button type="submit" class="cta-button">등록하기</button>
+      <p id="new-item-status" class="form-status"></p>
+    </form>
+  </section>
+</main>
+
+<script>
+let currentSession = null;
+const newItemForm = document.getElementById('new-item-form');
+const newItemStatus = document.getElementById('new-item-status');
+
+document.addEventListener('app-auth-ready', (event) => {
+  currentSession = event.detail.session;
+});
+
+newItemForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  newItemStatus.textContent = '등록 중입니다...';
+
+  try {
+    const client = await window.appAuth.getSupabaseClient();
+    const session = currentSession || await window.appAuth.getSession();
+    const formData = new FormData(newItemForm);
+    const title = String(formData.get('title') || '').trim();
+    const summary = String(formData.get('summary') || '').trim();
+    const eventDate = formData.get('event_date');
+
+    const payload = {
+      author_id: session.user.id,
+      title,
+      region: String(formData.get('region') || '전국/온라인').trim(),
+      event_date: eventDate || null,
+      tag: String(formData.get('tag') || '').trim(),
+      level: String(formData.get('level') || '').trim(),
+      hours: String(formData.get('hours') || '').trim(),
+      summary: summary || title,
+      details: [],
+      status: 'active',
+    };
+
+    const { error } = await client.from('items').insert(payload);
+    if (error) throw error;
+
+    newItemStatus.textContent = '등록되었습니다.';
+    newItemForm.reset();
+  } catch (error) {
+    newItemStatus.textContent = error.message || '등록에 실패했습니다.';
+  }
+});
+</script>
+
+</body>
+</html>

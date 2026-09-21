@@ -5,17 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>안병옥 | 38년 실무 경험 × AI 교육 전문가</title>
 <link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/auth.js" defer></script>
 </head>
 <body>
 
 <nav class="navbar">
-  <div class="logo">안병옥 <span>강사</span></div>
+  <a href="/" class="logo">안병옥 <span>강사</span></a>
   <div class="nav-links">
     <a href="#curriculum">커리큘럼</a>
     <a href="#career">경력</a>
     <a href="#awards">수상·활동</a>
+    <a href="/list/">둘러보기</a>
+    <a href="/new/">등록</a>
   </div>
   <a href="#contact" class="nav-btn">강의 문의하기</a>
+  <div class="auth-nav" data-auth-nav></div>
 </nav>
 
 <header class="hero">
@@ -26,7 +31,7 @@
     누구나 자신감을 갖고 따라올 수 있습니다.</p>
     <div class="hero-buttons">
       <a href="#contact" class="cta-button" id="hero-cta">무료 강의 상담 신청하기</a>
-      <a href="#curriculum" class="ghost-button">커리큘럼 보기</a>
+      <a href="/list/" class="ghost-button">둘러보기</a>
     </div>
     <div class="stat-row">
       <div class="stat"><strong>38년</strong><span>공직·실무 경력</span></div>

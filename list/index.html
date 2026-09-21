@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>강의 목록 | 안병옥 강사</title>
+<link rel="stylesheet" href="/style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/auth.js" defer></script>
+</head>
+<body class="list-page">
+
+<nav class="navbar">
+  <a href="/" class="logo">안병옥 <span>강사</span></a>
+  <div class="nav-links">
+    <a href="/#curriculum">커리큘럼</a>
+    <a href="/#career">경력</a>
+    <a href="/#awards">수상·활동</a>
+    <a href="/new/">등록</a>
+  </div>
+  <a href="/#contact" class="nav-btn">강의 문의하기</a>
+  <div class="auth-nav" data-auth-nav></div>
+</nav>
+
+<main class="list-main">
+  <section class="list-hero">
+    <span class="section-kicker">PROGRAMS</span>
+    <h1>강의 둘러보기</h1>
+    <p>기관과 학습자에게 맞는 AI·디지털·무역 실무 강의를 확인해보세요.</p>
+  </section>
+
+  <section class="items-section" aria-live="polite">
+    <p id="items-loading" class="items-message">목록을 불러오는 중입니다...</p>
+    <p id="items-empty" class="items-message hidden">아직 등록된 글이 없어요</p>
+    <p id="items-error" class="items-message items-error hidden"></p>
+    <div id="items-grid" class="items-grid"></div>
+  </section>
+</main>
+
+<script>
+const loadingEl = document.getElementById('items-loading');
+const emptyEl = document.getElementById('items-empty');
+const errorEl = document.getElementById('items-error');
+const gridEl = document.getElementById('items-grid');
+
+function escapeHtml(value) {
+  const div = document.createElement('div');
+  div.textContent = value == null ? '' : String(value);
+  return div.innerHTML;
+}
+
+function formatDate(value) {
+  if (!value) return '일정 협의';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '일정 협의';
+  return new Intl.DateTimeFormat('ko-KR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(date);
+}
+
+function renderItems(items) {
+  if (!Array.isArray(items) || items.length === 0) {
+    emptyEl.classList.remove('hidden');
+    return;
+  }
+
+  gridEl.innerHTML = items
+    .map((item) => `
+      <article class="item-card">
+        <h2>${escapeHtml(item.title)}</h2>
+        <dl>
+          <div>
+            <dt>지역</dt>
+            <dd>${escapeHtml(item.region || '전국/온라인')}</dd>
+          </div>
+          <div>
+            <dt>날짜</dt>
+            <dd>${escapeHtml(formatDate(item.event_date || item.created_at))}</dd>
+          </div>
+        </dl>
+      </article>
+    `)
+    .join('');
+}
+
+async function loadItems() {
+  try {
+    const response = await fetch('/api/items');
+    const data = await response.json().catch(() => null);
+    loadingEl.classList.add('hidden');
+
+    if (!response.ok) {
+      errorEl.textContent = data && data.error ? data.error : '목록을 불러오지 못했습니다.';
+      errorEl.classList.remove('hidden');
+      return;
+    }
+
+    renderItems(data);
+  } catch (error) {
+    loadingEl.classList.add('hidden');
+    errorEl.textContent = '목록을 불러오지 못했습니다.';
+    errorEl.classList.remove('hidden');
+  }
+}
+
+loadItems();
+</script>
+
+</body>
+</html>
